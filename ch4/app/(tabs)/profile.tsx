@@ -1,7 +1,6 @@
 // app/(tabs)/profile.tsx
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
-// import { useRouter } from 'expo-router'; // 현재 코드에서는 직접 사용하지 않으므로 주석 처리 또는 제거 가능
 import axios from 'axios';
 import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
@@ -62,13 +61,11 @@ const MBTI_OPTIONS = MBTI_TYPES.map(type => ({ label: type, value: type }));
 
 export default function ProfileScreen() {
   const { logout, isLoading: authLoading, token } = useAuth();
-  // const router = useRouter();
 
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- 모달 상태 정의 ---
   const [isNicknameModalVisible, setIsNicknameModalVisible] = useState(false);
   const [newNickname, setNewNickname] = useState('');
   const [isGenderModalVisible, setIsGenderModalVisible] = useState(false);
@@ -80,10 +77,9 @@ export default function ProfileScreen() {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isBloodTypeModalVisible, setIsBloodTypeModalVisible] = useState(false);
   const [isMbtiModalVisible, setIsMbtiModalVisible] = useState(false);
-  // --- 모달 상태 정의 끝 ---
 
   const fetchUserProfile = async () => {
-    console.log("fetchUserProfile called. Token:", token);
+    console.log("fetchUserProfile called. Token:", token ? "Present" : "Absent");
     if (!token) {
       Alert.alert("오류", "로그인 정보가 없습니다. 다시 로그인해주세요.");
       setIsLoading(false);
@@ -120,7 +116,7 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    console.log("ProfileScreen useEffect triggered. Token:", token, "AuthLoading:", authLoading);
+    console.log("ProfileScreen useEffect triggered. Token:", token ? "Present" : "Absent", "AuthLoading:", authLoading);
     if (token && !authLoading) {
       fetchUserProfile();
     } else if (!token && !authLoading) {
@@ -131,44 +127,56 @@ export default function ProfileScreen() {
     }
   }, [token, authLoading]);
 
+
   const handleLogout = async () => {
     if (isSubmitting) return;
     await logout();
   };
 
-  // --- 각 항목 저장 핸들러 ---
+  // --- 각 항목 저장 핸들러 (이전과 동일) ---
   const handleSaveNickname = async () => {
     if (!token || !userData) return;
-    if (newNickname.trim().length === 0) { Alert.alert("오류", "닉네임을 입력해주세요."); return; }
-    if (newNickname.trim().length > 12) { Alert.alert("오류", "닉네임은 최대 12자까지 입력할 수 있습니다."); return; }
+    const trimmedNickname = newNickname.trim();
+    if (trimmedNickname.length === 0) { Alert.alert("오류", "닉네임을 입력해주세요."); return; }
+    if (trimmedNickname.length > 12) { Alert.alert("오류", "닉네임은 최대 12자까지 입력할 수 있습니다."); return; }
+    const payload = { username: trimmedNickname };
+    console.log('Sending to backend (Nickname Update):', JSON.stringify(payload));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, { username: newNickname.trim() }, { headers: { Authorization: `Bearer ${token}` } });
-      setUserData(prev => prev ? { ...prev, username: newNickname.trim() } : null);
-      setIsNicknameModalVisible(false); Alert.alert("성공", "닉네임이 변경되었습니다.");
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      setUserData(prev => prev ? { ...prev, username: trimmedNickname } : null);
+      setIsNicknameModalVisible(false);
+      Alert.alert("성공", "닉네임이 변경되었습니다.");
     } catch (e:any) { console.error("닉네임 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data?.message || "닉네임 변경에 실패했습니다."); }
     finally { setIsSubmitting(false); }
   };
 
   const handleSaveGender = async (genderValue: string) => {
     if (!token || !userData) return;
+    const payload = { gender: genderValue };
+    console.log('Sending to backend (Gender Update):', JSON.stringify(payload));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, { gender: genderValue }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, payload, { headers: { Authorization: `Bearer ${token}` } });
       setUserData(prev => prev ? { ...prev, gender: genderValue } : null);
-      setIsGenderModalVisible(false); Alert.alert("성공", "성별 정보가 업데이트되었습니다.");
+      setIsGenderModalVisible(false);
+      Alert.alert("성공", "성별 정보가 업데이트되었습니다.");
     } catch (e:any) { console.error("성별 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data?.message || "성별 정보 업데이트에 실패했습니다."); }
     finally { setIsSubmitting(false); }
   };
 
   const handleSaveEmail = async () => {
     if (!token || !userData) return;
-    if (!newEmail.trim() || !/\S+@\S+\.\S+/.test(newEmail)) { Alert.alert("오류", "올바른 이메일 형식이 아닙니다."); return; }
+    const trimmedEmail = newEmail.trim();
+    if (!trimmedEmail || !/\S+@\S+\.\S+/.test(trimmedEmail)) { Alert.alert("오류", "올바른 이메일 형식이 아닙니다."); return; }
+    const payload = { newEmail: trimmedEmail };
+    console.log('Sending to backend (Email Update):', JSON.stringify(payload));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_EMAIL}`, { newEmail: newEmail.trim() }, { headers: { Authorization: `Bearer ${token}` } });
-      setUserData(prev => prev ? { ...prev, email: newEmail.trim() } : null);
-      setIsEmailModalVisible(false); Alert.alert("성공", "이메일이 변경되었습니다.");
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_EMAIL}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      setUserData(prev => prev ? { ...prev, email: trimmedEmail } : null);
+      setIsEmailModalVisible(false);
+      Alert.alert("성공", "이메일이 변경되었습니다.");
     } catch (e:any) { console.error("이메일 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data?.message || "이메일 변경에 실패했습니다."); }
     finally { setIsSubmitting(false); }
   };
@@ -178,24 +186,34 @@ export default function ProfileScreen() {
     if (!currentPassword || !newPasswordForUpdate || !confirmNewPassword) { Alert.alert("오류", "모든 비밀번호 필드를 입력해주세요."); return; }
     if (newPasswordForUpdate !== confirmNewPassword) { Alert.alert("오류", "새 비밀번호가 일치하지 않습니다."); return; }
     if (newPasswordForUpdate.length < 8) { Alert.alert("오류", "새 비밀번호는 8자 이상이어야 합니다."); return;}
+    const payload = { currentPassword, newPassword: newPasswordForUpdate };
+    console.log('Sending to backend (Password Update):', JSON.stringify({ currentPassword: '***', newPassword: '***' }));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_PASSWORD}`, { currentPassword, newPassword: newPasswordForUpdate }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_PASSWORD}`, payload, { headers: { Authorization: `Bearer ${token}` } });
       setIsPasswordModalVisible(false);
-      setCurrentPassword(''); setNewPasswordForUpdate(''); setConfirmNewPassword('');
+      setCurrentPassword('');
+      setNewPasswordForUpdate('');
+      setConfirmNewPassword('');
       Alert.alert("성공", "비밀번호가 변경되었습니다. 보안을 위해 다시 로그인해주세요.");
       logout();
-    } catch (e:any) { console.error("비밀번호 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data || "비밀번호 변경에 실패했습니다."); }
+    } catch (e:any) {
+        console.error("비밀번호 변경 실패:", e.response?.data || e.message);
+        Alert.alert("오류", (e.response?.data?.message || e.response?.data) || "비밀번호 변경에 실패했습니다.");
+    }
     finally { setIsSubmitting(false); }
   };
 
   const handleSaveBloodType = async (bloodTypeValue: string | null) => {
     if (!token || !userData) return;
+    const payload = { bloodType: bloodTypeValue };
+    console.log('Sending to backend (BloodType Update):', JSON.stringify(payload));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, { bloodType: bloodTypeValue }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, payload, { headers: { Authorization: `Bearer ${token}` } });
       setUserData(prev => prev ? { ...prev, bloodType: bloodTypeValue } : null);
-      setIsBloodTypeModalVisible(false); Alert.alert("성공", "혈액형 정보가 업데이트되었습니다.");
+      setIsBloodTypeModalVisible(false);
+      Alert.alert("성공", "혈액형 정보가 업데이트되었습니다.");
     } catch (e:any) { console.error("혈액형 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data?.message || "혈액형 업데이트에 실패했습니다."); }
     finally { setIsSubmitting(false); }
   };
@@ -203,20 +221,25 @@ export default function ProfileScreen() {
   const handleSaveMbti = async (mbtiValue: string | null) => {
     if (!token || !userData) return;
     const upperMbtiValue = mbtiValue ? mbtiValue.trim().toUpperCase() : null;
-    if (upperMbtiValue && upperMbtiValue.length !== 4) { Alert.alert("오류", "MBTI는 4글자로 입력해주세요. (예: INFP)"); return; }
+    if (upperMbtiValue && !MBTI_TYPES.includes(upperMbtiValue)) {
+        Alert.alert("오류", "올바른 MBTI 형식이 아닙니다. (예: INFP)"); return;
+    }
+    const payload = { mbti: upperMbtiValue };
+    console.log('Sending to backend (MBTI Update):', JSON.stringify(payload));
     setIsSubmitting(true);
     try {
-      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, { mbti: upperMbtiValue }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${API_BASE_URL}${API_ENDPOINTS_PROFILE.UPDATE_USER_PROFILE}`, payload, { headers: { Authorization: `Bearer ${token}` } });
       setUserData(prev => prev ? { ...prev, mbti: upperMbtiValue } : null);
-      setIsMbtiModalVisible(false); Alert.alert("성공", "MBTI 정보가 업데이트되었습니다.");
+      setIsMbtiModalVisible(false);
+      Alert.alert("성공", "MBTI 정보가 업데이트되었습니다.");
     } catch (e:any) { console.error("MBTI 변경 실패:", e.response?.data || e.message); Alert.alert("오류", e.response?.data?.message || "MBTI 업데이트에 실패했습니다."); }
     finally { setIsSubmitting(false); }
   };
   // --- 각 항목 저장 핸들러 끝 ---
 
-  // --- 모달 열기 핸들러 ---
   const navigateToEditScreen = (editType: string, currentValue?: string | null) => {
     if (!userData) { Alert.alert("정보 로딩 중", "잠시 후 다시 시도해주세요."); return; }
+    console.log(`MapsToEditScreen called for: ${editType}`); // 어떤 항목 클릭했는지 로그 추가
     switch (editType) {
       case '이메일': setNewEmail(currentValue || ''); setIsEmailModalVisible(true); break;
       case '닉네임': setNewNickname(currentValue || ''); setIsNicknameModalVisible(true); break;
@@ -224,33 +247,65 @@ export default function ProfileScreen() {
       case '성별': setIsGenderModalVisible(true); break;
       case '혈액형': setIsBloodTypeModalVisible(true); break;
       case 'MBTI': setIsMbtiModalVisible(true); break;
+      case '계정 탈퇴': Alert.alert("계정 탈퇴", "정말로 계정을 삭제하시겠습니까?", [{text: '취소'}, {text: '삭제', style: 'destructive', onPress: () => { /* TODO: 계정 탈퇴 API 호출 */ Alert.alert('알림', '계정 삭제 기능은 준비중입니다.');}}]); break;
       default: Alert.alert('알림', `${editType} 변경은 준비 중입니다.`);
     }
   };
-  // --- 모달 열기 핸들러 끝 ---
 
   const navigateToInfoScreen = (infoType: string) => {
+    console.log(`MapsToInfoScreen called for: ${infoType}`); // 어떤 항목 클릭했는지 로그 추가
     Alert.alert(infoType, "세부 내용을 표시할 화면으로 이동합니다. (구현 필요)");
   };
 
+  // ListItem 컴포넌트 정의 수정
   const ListItem = ({ label, value, onPress, isFirstInSection = false, isLastInSection = false, hideArrow = false,
   }: { label: string; value?: string | null; onPress?: () => void; isFirstInSection?: boolean; isLastInSection?: boolean; hideArrow?: boolean;
   }) => {
-    const displayValue = value || '입력하기';
-    const isPlaceholder = !value;
+    let displayValue = ""; // 기본적으로는 빈 문자열
+    let showValueText = false; // 값을 표시할지 여부
+    let isPlaceholder = false; // "입력하기" 스타일을 적용할지 여부
+
+    const labelsThatNeedPlaceholder = ["성별", "혈액형", "MBTI", "이메일 변경", "닉네임 변경"]; // "입력하기"가 필요한 항목들
+    const labelsThatShouldBeEmpty = ["오픈 라이선스", "개인정보처리방침", "이용약관", "로그아웃", "계정 탈퇴", "아이디", "비밀번호 변경"]; // 값이 비어있어야 하는 항목
+
+    if (value && value.trim() !== "") { // 실제 값이 있는 경우
+        displayValue = value;
+        showValueText = true;
+    } else { // 값이 없거나 빈 문자열인 경우
+        if (labelsThatNeedPlaceholder.includes(label) && !hideArrow) {
+            displayValue = "입력하기";
+            showValueText = true;
+            isPlaceholder = true;
+        } else if (labelsThatShouldBeEmpty.includes(label)) {
+            displayValue = ""; // 빈 값으로 명시적 설정
+            showValueText = false; // 텍스트 컴포넌트 자체를 숨길 수 있음 (또는 빈 값으로 표시)
+        }
+        // 그 외 경우는 displayValue = "" 이고 showValueText = false 유지
+    }
+    
+    // "아이디", "비밀번호 변경"은 value가 항상 있으므로 위 로직에 안걸리고, displayValue = value가 됨.
+
     return (
-      <TouchableOpacity style={[ styles.listItem, isFirstInSection && styles.listItemFirst, isLastInSection && styles.listItemLast, !onPress && styles.nonTouchableListItem,]} onPress={onPress} disabled={!onPress || isSubmitting} >
+      <TouchableOpacity
+        style={[ styles.listItem, isFirstInSection && styles.listItemFirst, isLastInSection && styles.listItemLast, !onPress && styles.nonTouchableListItem,]}
+        onPress={onPress}
+        disabled={!onPress || isSubmitting}
+      >
         <Text style={styles.label}>{label}</Text>
         <View style={styles.valueContainer}>
-          <Text style={[styles.value, isPlaceholder && styles.placeholderValue]}>{displayValue}</Text>
+          {showValueText && (
+            <Text style={[styles.value, isPlaceholder && styles.placeholderValue]}>
+              {displayValue}
+            </Text>
+          )}
           {!hideArrow && onPress && (<Ionicons name="chevron-forward" size={20} color="#C7C7CC" />)}
         </View>
       </TouchableOpacity>
     );
   };
 
-  // --- 로딩 및 에러 UI 처리 ---
-  if (isLoading) {
+
+  if (isLoading && !userData) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}><Text style={styles.headerTitle}>내 계정</Text></View>
@@ -262,28 +317,44 @@ export default function ProfileScreen() {
     );
   }
 
-  if (!userData) {
+  if (!userData && !authLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}><Text style={styles.headerTitle}>내 계정</Text></View>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>프로필 정보를 불러올 수 없습니다.</Text>
-          <TouchableOpacity onPress={token ? fetchUserProfile : () => { Alert.alert("오류", "로그인이 필요합니다."); logout();}} style={styles.retryButton}>
+          <TouchableOpacity
+            onPress={token ? fetchUserProfile : () => { Alert.alert("오류", "로그인이 필요합니다."); logout();}}
+            style={styles.retryButton}
+            disabled={isSubmitting || authLoading}
+          >
             <Text style={styles.retryButtonText}>다시 시도</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
-  // --- 로딩 및 에러 UI 처리 끝 ---
+
+  if (!userData) {
+      return <SafeAreaView style={styles.safeArea}><Text>데이터 로딩에 실패했습니다.</Text></SafeAreaView>;
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>내 계정</Text>
       </View>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} >
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollViewContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.section}>
             <ListItem label="아이디" value={userData.loginId} isFirstInSection hideArrow />
             <ListItem label="이메일 변경" value={userData.email} onPress={() => navigateToEditScreen('이메일', userData.email)} />
@@ -291,18 +362,63 @@ export default function ProfileScreen() {
             <ListItem label="비밀번호 변경" value="********" onPress={() => navigateToEditScreen('비밀번호')} isLastInSection />
           </View>
           <View style={styles.section}>
-            <ListItem label="성별" value={GENDER_OPTIONS.find(opt => opt.value === userData.gender)?.label || userData.gender} onPress={() => navigateToEditScreen('성별', userData.gender)} isFirstInSection />
-            <ListItem label="혈액형" value={BLOOD_TYPE_OPTIONS.find(opt => opt.value === userData.bloodType)?.label || userData.bloodType} onPress={() => navigateToEditScreen('혈액형', userData.bloodType)} />
-            <ListItem label="MBTI" value={MBTI_OPTIONS.find(opt => opt.value === userData.mbti)?.label || userData.mbti} onPress={() => navigateToEditScreen('MBTI', userData.mbti)} isLastInSection />
+            <ListItem
+                label="성별"
+                value={GENDER_OPTIONS.find(opt => opt.value === userData.gender)?.label || userData.gender}
+                onPress={() => navigateToEditScreen('성별')}
+                isFirstInSection
+            />
+            <ListItem
+                label="혈액형"
+                value={BLOOD_TYPE_OPTIONS.find(opt => opt.value === userData.bloodType)?.label || userData.bloodType}
+                onPress={() => navigateToEditScreen('혈액형')}
+            />
+            <ListItem
+                label="MBTI"
+                value={MBTI_OPTIONS.find(opt => opt.value === userData.mbti)?.label || userData.mbti}
+                onPress={() => navigateToEditScreen('MBTI')}
+                isLastInSection
+            />
           </View>
+
           <View style={styles.section}>
-            <ListItem label="오픈 라이선스" onPress={() => navigateToInfoScreen('오픈 라이선스')} isFirstInSection />
-            <ListItem label="개인정보처리방침" onPress={() => navigateToInfoScreen('개인정보처리방침')} />
-            <ListItem label="이용약관" onPress={() => navigateToInfoScreen('이용약관')} isLastInSection />
+            <ListItem
+              label="오픈 라이선스"
+              onPress={() => navigateToInfoScreen('오픈 라이선스')}
+              isFirstInSection
+              value="" // value를 빈 문자열로 전달하여 ListItem 내부 로직에 따라 처리
+              hideArrow={false} // 화살표 유지
+            />
+            <ListItem
+              label="개인정보처리방침"
+              onPress={() => navigateToInfoScreen('개인정보처리방침')}
+              value=""
+              hideArrow={false}
+            />
+            <ListItem
+              label="이용약관"
+              onPress={() => navigateToInfoScreen('이용약관')}
+              isLastInSection
+              value=""
+              hideArrow={false}
+            />
           </View>
+
           <View style={styles.section}>
-            <ListItem label="로그아웃" onPress={handleLogout} hideArrow isFirstInSection />
-            <ListItem label="계정 탈퇴" onPress={() => navigateToEditScreen('계정 탈퇴')} isLastInSection />
+            <ListItem
+              label="로그아웃"
+              onPress={handleLogout}
+              hideArrow={true} // 화살표 제거
+              isFirstInSection
+              value="" // value를 빈 문자열로 전달
+            />
+            <ListItem
+              label="계정 탈퇴"
+              onPress={() => navigateToEditScreen('계정 탈퇴')}
+              hideArrow={true} // 화살표 제거
+              isLastInSection
+              value="" // value를 빈 문자열로 전달
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -423,7 +539,7 @@ export default function ProfileScreen() {
                 <ScrollView style={styles.optionsScrollView}>
                     <View style={styles.optionsContainerGrid}>
                         {MBTI_OPTIONS.map(option => (
-                            <TouchableOpacity key={option.value} style={[ styles.optionButtonGrid, {width: '22%'}, /* MBTI는 4개씩 빡빡하게 */ userData?.mbti === option.value && styles.optionButtonSelected ]} onPress={() => handleSaveMbti(option.value)} disabled={isSubmitting} >
+                            <TouchableOpacity key={option.value} style={[ styles.optionButtonGrid, {width: '22%'}, userData?.mbti === option.value && styles.optionButtonSelected ]} onPress={() => handleSaveMbti(option.value)} disabled={isSubmitting} >
                                 <Text style={[styles.optionButtonText, userData?.mbti === option.value && styles.optionButtonTextSelected]}>{option.label}</Text>
                             </TouchableOpacity>
                         ))}
@@ -439,56 +555,306 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F0F0F7' },
-  header: { paddingTop: Platform.OS === 'android' ? Constants.statusBarHeight + 12 : 12, paddingBottom: 12, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#E5E5EA', backgroundColor: 'white', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 17, fontWeight: '600' },
+  header: {
+    paddingTop: Platform.OS === 'android' ? Constants.statusBarHeight + 12 : 12,
+    paddingBottom: 12,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+    backgroundColor: 'white',
+    alignItems: 'flex-start',
+  },
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
   scrollView: { flex: 1 },
-  scrollViewContent: { paddingVertical: 5, paddingBottom: 120 },
-  section: { backgroundColor: '#fff', borderRadius: 10, marginHorizontal: 15, marginTop: 20, shadowColor: 'rgba(0, 0, 0, 0.1)', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 1, shadowRadius: 3, elevation: 2 },
-  listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, backgroundColor: 'transparent', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#EFEFF4', minHeight: 48 },
+  scrollViewContent: {
+    paddingVertical: 5,
+    paddingBottom: 120
+  },
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginHorizontal: 15,
+    marginTop: 20,
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  listItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: 'transparent',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#EFEFF4',
+    minHeight: 48,
+  },
   listItemFirst: {},
-  listItemLast: { borderBottomWidth: 0 },
+  listItemLast: {
+    borderBottomWidth: 0,
+  },
   nonTouchableListItem: {},
-  label: { fontSize: 16, color: '#000000' },
-  valueContainer: { flexDirection: 'row', alignItems: 'center' },
-  value: { fontSize: 16, color: '#8E8E93', marginRight: 6 },
-  placeholderValue: { color: '#007AFF' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  loadingText: { marginTop: 10, fontSize: 16, color: '#555' },
-  errorText: { fontSize: 16, color: 'red', textAlign: 'center', marginBottom: 20 },
-  retryButton: { backgroundColor: '#007AFF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 5 },
-  retryButtonText: { color: 'white', fontSize: 16, fontWeight: 'bold' },
-
-  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.4)' },
-  modalOverlayTouchable: { flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' },
-  modalOverlayTouchableGender: { flex: 1, width: '100%', justifyContent: 'flex-end', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.4)' },
-  
-  genericModalContainer: { width: '85%', maxWidth: 340, backgroundColor: 'white', borderRadius: 14, paddingHorizontal: 24, paddingVertical: 20, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
-  modalTitle: { fontSize: 17, fontWeight: '600', color: '#000', marginBottom: 16, textAlign: 'center' },
-  textInputContainer: { flexDirection: 'row', alignItems: 'center', width: '100%', height: 44, backgroundColor: '#F2F2F7', borderRadius: 8, paddingHorizontal: 12, marginBottom: 8 },
-  textInput: { flex: 1, fontSize: 17, color: '#000' },
-  textInputFull: { width: '100%', height: 44, backgroundColor: '#F2F2F7', borderRadius: 8, paddingHorizontal: 12, fontSize: 17, color: '#000', marginBottom: 12 },
-  clearButton: { paddingLeft: 8 },
-  modalHelperText: { fontSize: 13, color: '#6C6C70', marginBottom: 20, textAlign: 'center' },
-  modalButton: { width: '100%', backgroundColor: '#007AFF', paddingVertical: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: 8 },
-  modalButtonDisabled: { backgroundColor: '#D1D1D6' },
-  modalButtonText: { color: 'white', fontSize: 17, fontWeight: '600' },
-
-  genderModalContainer: { width: '100%', backgroundColor: 'white', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: 16, paddingTop: 16, paddingBottom: Platform.OS === 'ios' ? 50 : 40, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 5 },
-  genderModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 8 },
-  modalCloseButton: { padding: 8 },
-  modalSubtitle: { fontSize: 13, color: '#8A8A8E', marginBottom: 24, textAlign: 'center', paddingHorizontal: 20 },
-  genderOptionsContainer: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', paddingHorizontal: 10 }, // space-around로 변경
-  genderOptionButton: { flex: 1, alignItems: 'center', paddingVertical: 16, marginHorizontal: 6, borderRadius: 12, backgroundColor: '#F2F2F2', borderWidth: 1, borderColor: '#E5E5EA' },
-  genderOptionButtonSelected: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  genderOptionText: { marginTop: 8, fontSize: 15, fontWeight: '500', color: '#000000' },
-  genderOptionTextSelected: { color: '#FFFFFF' },
-
-  selectionModalContainer: { width: '100%', backgroundColor: 'white', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: 16, paddingTop: 16, paddingBottom: Platform.OS === 'ios' ? 50 : 40, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 5, maxHeight: '70%' },
-  selectionModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 8 },
-  optionsScrollView: { width: '100%', maxHeight: 250 },
-  optionsContainerGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', width: '100%', paddingHorizontal: 5 },
-  optionButtonGrid: { minWidth: 70, maxWidth: 80, margin: 6, paddingVertical: 12, paddingHorizontal: 5, borderRadius: 10, backgroundColor: '#F2F2F2', borderWidth: 1, borderColor: '#E5E5EA', alignItems: 'center', justifyContent: 'center' },
-  optionButtonSelected: { backgroundColor: '#007AFF', borderColor: '#007AFF' }, // genderOptionButtonSelected 와 동일하므로 재사용 가능
-  optionButtonText: { fontSize: 14, fontWeight: '500', color: '#000000', textAlign: 'center' },
-  optionButtonTextSelected: { color: '#FFFFFF' }, // genderOptionTextSelected 와 동일하므로 재사용 가능
+  label: {
+    fontSize: 16,
+    color: '#000000',
+  },
+  valueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  value: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginRight: 6,
+  },
+  placeholderValue: {
+    color: '#007AFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#555'
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5
+  },
+  retryButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold'
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)'
+  },
+  modalOverlayTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  modalOverlayTouchableGender: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)'
+  },
+  genericModalContainer: {
+    width: '85%',
+    maxWidth: 340,
+    backgroundColor: 'white',
+    borderRadius: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 16,
+    textAlign: 'center'
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    height: 44,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 17,
+    color: '#000'
+  },
+  textInputFull: {
+    width: '100%',
+    height: 44,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 17,
+    color: '#000',
+    marginBottom: 12
+  },
+  clearButton: {
+    paddingLeft: 8
+  },
+  modalHelperText: {
+    fontSize: 13,
+    color: '#6C6C70',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  modalButton: {
+    width: '100%',
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    marginTop: 8
+  },
+  modalButtonDisabled: {
+    backgroundColor: '#D1D1D6'
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 17,
+    fontWeight: '600'
+  },
+  genderModalContainer: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  genderModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8
+  },
+  modalCloseButton: {
+    padding: 8
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: '#8A8A8E',
+    marginBottom: 24,
+    textAlign: 'center',
+    paddingHorizontal: 20
+  },
+  genderOptionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 10
+  },
+  genderOptionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginHorizontal: 6,
+    borderRadius: 12,
+    backgroundColor: '#F2F2F2',
+    borderWidth: 1,
+    borderColor: '#E5E5EA'
+  },
+  genderOptionButtonSelected: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF'
+  },
+  genderOptionText: {
+    marginTop: 8,
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#000000'
+  },
+  genderOptionTextSelected: {
+    color: '#FFFFFF'
+  },
+  selectionModalContainer: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    maxHeight: '70%'
+  },
+  selectionModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8
+  },
+  optionsScrollView: {
+    width: '100%',
+    maxHeight: 250
+  },
+  optionsContainerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: 5
+  },
+  optionButtonGrid: {
+    minWidth: 70,
+    maxWidth: 80,
+    margin: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: '#F2F2F2',
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  optionButtonSelected: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF'
+  },
+  optionButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000000',
+    textAlign: 'center'
+  },
+  optionButtonTextSelected: {
+    color: '#FFFFFF'
+  },
 });
