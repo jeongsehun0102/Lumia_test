@@ -1,4 +1,3 @@
-// src/main/java/com/ch4/lumia_backend/entity/UserSetting.java
 package com.ch4.lumia_backend.entity;
 
 import jakarta.persistence.*;
@@ -25,14 +24,14 @@ public class UserSetting {
     @JoinColumn(name = "user_pk_id", nullable = false, unique = true)
     private User user;
 
-    @Column(name = "notification_interval", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'NONE'")
-    private String notificationInterval = "NONE"; // "NONE", "DAILY_SPECIFIC_TIME", "WHEN_APP_OPENS"
-
-    @Column(name = "notification_time") // HH:mm:ss
+    @Column(name = "notification_time")
     private LocalTime notificationTime;
 
     @Column(name = "last_scheduled_message_at")
     private LocalDateTime lastScheduledMessageAt;
+
+    @Column(name = "last_daily_mood_at")
+    private LocalDateTime lastDailyMoodAt;
 
     @Column(name = "in_app_notification_enabled", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean inAppNotificationEnabled = true;
@@ -50,11 +49,11 @@ public class UserSetting {
     }
 
     @Builder
-    public UserSetting(User user, String notificationInterval, LocalTime notificationTime, LocalDateTime lastScheduledMessageAt, boolean inAppNotificationEnabled, boolean pushNotificationEnabled) {
+    public UserSetting(User user, LocalTime notificationTime, LocalDateTime lastScheduledMessageAt, LocalDateTime lastDailyMoodAt, boolean inAppNotificationEnabled, boolean pushNotificationEnabled) {
         this.user = user;
-        this.notificationInterval = notificationInterval;
         this.notificationTime = notificationTime;
         this.lastScheduledMessageAt = lastScheduledMessageAt;
+        this.lastDailyMoodAt = lastDailyMoodAt;
         this.inAppNotificationEnabled = inAppNotificationEnabled;
         this.pushNotificationEnabled = pushNotificationEnabled;
     }
