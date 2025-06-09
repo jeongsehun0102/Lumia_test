@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ch4",
-    "slug": "ch4",
+    "name": "Lumia",
+    "slug": "Lumia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "ch4",
+    "scheme": "lumia",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
