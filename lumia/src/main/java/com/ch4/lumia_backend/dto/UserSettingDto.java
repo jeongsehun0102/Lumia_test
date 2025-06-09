@@ -2,29 +2,29 @@
 package com.ch4.lumia_backend.dto;
 
 import com.ch4.lumia_backend.entity.UserSetting;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalTime;
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class UserSettingDto {
-    private String notificationInterval; // "NONE", "DAILY_SPECIFIC_TIME", "WHEN_APP_OPENS"
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss") // JSON 직렬화/역직렬화 시 포맷 지정
-    private LocalTime notificationTime; // "HH:mm:ss"
+    // "notificationInterval" 필드를 삭제했습니다.
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+    private LocalTime notificationTime;
 
     private Boolean inAppNotificationEnabled;
-    private Boolean pushNotificationEnabled; // 향후 확장용
+    private Boolean pushNotificationEnabled;
 
-    // Entity -> DTO
+    // Entity -> DTO 변환 메서드
     public static UserSettingDto fromEntity(UserSetting entity) {
         UserSettingDto dto = new UserSettingDto();
-        dto.setNotificationInterval(entity.getNotificationInterval());
+        // "notificationInterval" 관련 로직을 삭제했습니다.
         dto.setNotificationTime(entity.getNotificationTime());
         dto.setInAppNotificationEnabled(entity.isInAppNotificationEnabled());
         dto.setPushNotificationEnabled(entity.isPushNotificationEnabled());
