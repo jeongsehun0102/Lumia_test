@@ -1,11 +1,9 @@
-// components/TimeBasedBackground.tsx
-import React from 'react';
-import { ImageBackground, ImageRequireSource, StyleSheet } from 'react-native';
-// parkImages 객체가 정의된 파일을 정확히 import 해야 합니다.
-// 예를 들어 assets/images/index.ts 에 정의되어 있다면:
-import { parkImages } from '../assets/images';
 
-const getBackgroundImage = (): ImageRequireSource => {
+import React from 'react';
+import { ImageBackground, StyleSheet } from 'react-native';
+import { parkImages } from '../assets/images'; // 경로는 네 구조에 맞게 수정해줘
+
+const getBackgroundImage = () => {
   const hour = new Date().getHours();
 
   if (hour >= 0 && hour < 6) return parkImages.night;
@@ -28,7 +26,7 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     resizeMode: 'cover',
-    // justifyContent: 'center', // <<< 이 줄을 주석 처리하거나 삭제합니다.
+    justifyContent: 'center',
   },
 });
 
