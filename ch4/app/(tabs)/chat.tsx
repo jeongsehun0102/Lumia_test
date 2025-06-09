@@ -16,7 +16,7 @@ import {
 import character from '@/assets/images/chat_Image.png';
 import TimeBasedBackground from '@/components/TimeBasedBackground';
 
-const OPENAI_API_KEY = 'Bearer 123';
+const OPENAI_API_KEY = '???????';
 
 const ChatScreen = () => {
   const [botMessage, setBotMessage] = useState('안녕하세요! 무엇을 도와드릴까요?');
