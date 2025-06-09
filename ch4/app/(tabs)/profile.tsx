@@ -308,7 +308,7 @@ export default function ProfileScreen() {
   if (isLoading && !userData) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}><Text style={styles.headerTitle}>내 계정</Text></View>
+        <View style={styles.header}><Text style={styles.headerTitle}>계정</Text></View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.loadingText}>프로필 정보 로딩 중...</Text>
@@ -320,7 +320,7 @@ export default function ProfileScreen() {
   if (!userData && !authLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}><Text style={styles.headerTitle}>내 계정</Text></View>
+        <View style={styles.header}><Text style={styles.headerTitle}>계정</Text></View>
         <View style={styles.loadingContainer}>
           <Text style={styles.errorText}>프로필 정보를 불러올 수 없습니다.</Text>
           <TouchableOpacity
@@ -342,7 +342,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>내 계정</Text>
+        <Text style={styles.headerTitle}>Profile</Text>
       </View>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -554,62 +554,67 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F0F0F7' },
+    safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
   header: {
-    paddingTop: Platform.OS === 'android' ? Constants.statusBarHeight + 12 : 12,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === 'android' ? Constants.statusBarHeight + 12 : 20,
+    paddingBottom: 20,
     paddingHorizontal: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    backgroundColor: 'white',
-    alignItems: 'flex-start',
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1C1C1E',
   },
   scrollView: { flex: 1 },
   scrollViewContent: {
-    paddingVertical: 5,
-    paddingBottom: 120
+    paddingVertical: 10,
+    paddingBottom: 100,
   },
   section: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginHorizontal: 15,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginHorizontal: 16,
     marginTop: 20,
-    shadowColor: 'rgba(0, 0, 0, 0.1)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
   },
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#EFEFF4',
-    minHeight: 48,
   },
-  listItemFirst: {},
+  listItemFirst: {
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
   listItemLast: {
     borderBottomWidth: 0,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
   nonTouchableListItem: {},
   label: {
     fontSize: 16,
-    color: '#000000',
+    fontWeight: '500',
+    color: '#1C1C1E',
   },
   valueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   value: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#8E8E93',
     marginRight: 6,
   },
@@ -625,24 +630,24 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#555'
+    color: '#555555',
   },
   errorText: {
     fontSize: 16,
-    color: 'red',
+    color: '#FF3B30',
     textAlign: 'center',
-    marginBottom: 20
+    marginBottom: 20,
   },
   retryButton: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5
+    paddingVertical: 12,
+    borderRadius: 8,
   },
   retryButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,

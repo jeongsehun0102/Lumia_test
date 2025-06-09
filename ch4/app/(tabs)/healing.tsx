@@ -1,7 +1,6 @@
 import { useIsFocused } from '@react-navigation/native';
 import { Audio, ResizeMode, Video } from 'expo-av';
 import React, { useEffect, useRef } from 'react';
-
 import {
   Dimensions,
   FlatList,
@@ -17,15 +16,15 @@ const data = [
   {
     key: 'fire',
     label: '불멍',
-    type: 'video', // 구분자 추가
+    type: 'video',
     video: require('../../assets/videos/fire.mp4'),
     sound: require('../../assets/sounds/fire_sound.mp3'),
   },
   {
     key: 'rain',
     label: '빗멍',
-    type: 'image',
-    image: require('../../assets/images/rain.gif'),
+    type: 'video',
+    video: require('../../assets/videos/rain.mp4'),
     sound: require('../../assets/sounds/rain_sound.mp3'),
   },
 ];
@@ -33,7 +32,7 @@ const data = [
 export default function HealingScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const viewIndex = useRef(0);
-  const videoRef = useRef<Video | null>(null);
+  const isFocused = useIsFocused();
 
   const playSound = async (index: number) => {
     const item = data[index];
@@ -65,35 +64,30 @@ export default function HealingScreen() {
 
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-const isFocused = useIsFocused();
-
-useEffect(() => {
-  if (isFocused) {
-    playSound(viewIndex.current);
-  } else {
-    stopSound();
-  }
-
-  return () => {
-    stopSound();
-  };
-}, [isFocused]);
-
+  useEffect(() => {
+    if (isFocused) {
+      playSound(viewIndex.current);
+    } else {
+      stopSound();
+    }
+    return () => {
+      stopSound();
+    };
+  }, [isFocused]);
 
   const renderItem = ({ item }: any) => (
     <View style={styles.page}>
       {item.type === 'video' ? (
         <Video
-          ref={videoRef}
           source={item.video}
-          style={styles.media}
-           resizeMode={ResizeMode.COVER}
+          style={item.key === 'fire' ? styles.mediaFire : styles.mediaRain}
+          resizeMode={ResizeMode.COVER}
           isLooping
           shouldPlay
-          isMuted // 소리는 mp3로 따로 처리
+          isMuted
         />
       ) : (
-        <Image source={item.image} style={styles.media} resizeMode="cover" />
+        <Image source={item.image} style={styles.mediaFire} resizeMode="cover" />
       )}
       <Text style={styles.label}>{item.label}</Text>
     </View>
@@ -120,10 +114,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
-  media: {
+  mediaFire: {
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '90%',
+  },
+  mediaRain: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '80%',
+    marginTop: 30, // 필요 시 추가 조정 가능
   },
   label: {
     marginBottom: 50,
