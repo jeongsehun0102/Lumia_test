@@ -1,22 +1,41 @@
-// app/constants/api.ts
-export const API_BASE_URL = 'http://?.?.?.?:8080'; // 서버 주소
+// 앱이 통신할 백엔드 서버의 기본 주소 (자신의 PC IP로 수정)
+export const API_BASE_URL = 'http://192.168.91.161:8080';
 
+// 실제 백엔드 엔드포인트에 맞게 경로 전부 수정!
 export const API_ENDPOINTS = {
-  LOGIN: '/api/users/auth/login', // 수정된 경로
-  SIGNUP: '/api/users/auth/signup', // 수정된 경로
-  REFRESH_TOKEN: '/api/users/auth/refresh-token', // 수정된 경로
+  // 인증/계정 관련 (UserController)
+  LOGIN: '/api/users/auth/login',
+  SIGNUP: '/api/users/auth/signup',
+  REFRESH_TOKEN: '/api/users/auth/refresh-token',
+  LOGOUT: '/api/users/auth/logout',
+  FIND_ID_BY_EMAIL: '/api/users/auth/find-id',
+  // 사용자 설정/프로필 (UserController)
+  GET_USER_SETTINGS: '/api/users/me/settings',
+  UPDATE_USER_SETTINGS: '/api/users/me/settings',
+  GET_USER_PROFILE: '/api/users/me/profile',
+  UPDATE_USER_PROFILE: '/api/users/me/profile',
+  UPDATE_EMAIL: '/api/users/me/email',
+  UPDATE_PASSWORD: '/api/users/me/password',
 
-  GET_USER_PROFILE: '/api/users/me/profile', // 기존 프로필 경로 유지
-  UPDATE_USER_PROFILE: '/api/users/me/profile', // 기존 프로필 경로 유지
-  UPDATE_EMAIL: '/api/users/me/email', // 기존 프로필 경로 유지
-  UPDATE_PASSWORD: '/api/users/me/password', // 기존 프로필 경로 유지
+  // 질문 (QuestionController)
+  GET_SCHEDULED_QUESTION: '/api/questions/scheduled',      // [수정]
+  GET_DAILY_MOOD_QUESTION: '/api/questions/daily-mood',   // [신규]
 
-  GET_USER_SETTINGS: '/api/users/me/settings', // 기존 설정 경로 유지
-  UPDATE_USER_SETTINGS: '/api/users/me/settings', // 기존 설정 경로 유지
-
-  // 질문 및 답변 관련 엔드포인트는 UserController가 아닌 별도 컨트롤러에 있을 수 있으므로 확인 필요
-  // 만약 UserController에 있다면 /api/users/questions/... 와 같이 변경 필요
-  GET_QUESTION: '/api/questions/for-me', // 현재 QuestionController는 @RequestMapping("/api/questions")
-  SAVE_ANSWER: '/api/answers',             // 현재 AnswerController는 @RequestMapping("/api/answers")
+  // 답변 (AnswerController)
+  SAVE_ANSWER: '/api/answers',
   GET_MY_ANSWERS: '/api/answers/my-records',
+
+  
+  // === 게시글 (PostController) ===
+  GET_POSTS_LIST: '/api/posts/list',
+  CREATE_POST: '/api/posts/write',
+  GET_POST_DETAIL: (postId: number | string) => `/api/posts/${postId}`,
+  UPDATE_POST: (postId: number | string) => `/api/posts/${postId}`,
+  DELETE_POST: (postId: number | string) => `/api/posts/${postId}`,
+
+  // === 댓글 (CommentController) ===
+  GET_COMMENTS_FOR_POST: (postId: number | string) => `/api/posts/${postId}/comments`,
+  CREATE_COMMENT: (postId: number | string) => `/api/posts/${postId}/comments`,
+  UPDATE_COMMENT: (commentId: number | string) => `/api/comments/${commentId}`,
+  DELETE_COMMENT: (commentId: number | string) => `/api/comments/${commentId}`,
 };
