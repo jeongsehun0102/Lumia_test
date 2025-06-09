@@ -1,4 +1,6 @@
+
 // app/VibrationTestScreen.tsx
+
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Alert, Button, StyleSheet, View } from 'react-native';
@@ -10,7 +12,6 @@ const VibrationTestScreen = () => {
       Alert.alert("진동 테스트", "진동이 울렸나요?");
     } catch (error) {
       Alert.alert("오류", "진동을 울릴 수 없습니다.");
-      console.error("Vibration error:", error);
     }
   };
 
